@@ -1,0 +1,10 @@
+Date,District,Waste_Type,Weight_Tons,Recycling_Rate
+2023-01-15,Downtown,Organic,12.5,65
+2023-01-15,Downtown,Plastic,8.3,45
+2023-01-15,Westside,Organic,15.2,70
+2023-01-15,Westside,Glass,5.7,85
+2023-02-15,Downtown,Organic,13.1,68
+2023-02-15,Downtown,Paper,7.4,60
+2023-02-15,Westside,Plastic,9.8,50
+
+//Dashbord canvas

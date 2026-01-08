@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoWaste - Municipal AI Waste Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f6fa;
+            margin: 0;
+        }
+        .gov-header {
+            background: #1a237e;
+            color: #fff;
+            padding: 20px 0 12px 0;
+            text-align: center;
+            border-bottom: 3px solid #3949ab;
+        }
+        .gov-logo {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 6px;
+        }
+        .footer {
+            background: #1a237e;
+            color: #fff;
+            text-align: center;
+            padding: 12px 0;
+            margin-top: 32px;
+            font-size: 0.95rem;
+        }
+        .main-box {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(60, 72, 88, 0.08);
+            padding: 20px 16px 18px 16px;
+            max-width: 600px; /* Medium width */
+            margin: 32px auto 0 auto;
+        }
+        .section-title {
+            color: #1a237e;
+            font-weight: 700;
+            font-size: 1.35rem;
+            margin-bottom: 10px;
+            text-align: center; /* Center the title */
+            letter-spacing: 0.5px;
+        }
+        .section-subtitle {
+            color: #3949ab;
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 0.98rem;
+        }
+        .upload-area {
+            border: 2px dashed #4CAF50;
+            border-radius: 10px;
+            padding: 18px 8px;
+            text-align: center;
+            background: #f4f6fa;
+            transition: background 0.3s, border-color 0.3s;
+            font-size: 0.98rem;
+        }
+        .upload-area.dragover {
+            background: #e8f5e9;
+            border-color: #388e3c;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #2E7D32, #4CAF50);
+            transition: all 0.3s ease;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 8px 18px;
+            font-size: 0.98rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: #388e3c;
+        }
+        .img-preview-box {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .img-preview-box img {
+            max-width: 140px;
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+        }
+        .remove-btn {
+            background: #f44336;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .results-box {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 14px 8px;
+            margin-top: 16px;
+        }
+        .results-title {
+            color: #1a237e;
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+        }
+        .result-row {
+            margin-bottom: 10px;
+            font-size: 0.97rem;
+        }
+        .result-label {
+            color: #3949ab;
+            font-weight: 500;
+        }
+        .result-value {
+            color: #222;
+            font-weight: 600;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 0.45rem;
+            background-color: #e3e6f3;
+            border-radius: 0.22rem;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 0.22rem;
+        }
+        .suggestion-list {
+            margin: 0;
+            padding-left: 16px;
+            color: #388e3c;
+            font-size: 0.97rem;
+        }
+        .municipal-box {
+            background: #e8f5e9;
+            border-radius: 8px;
+            padding: 8px 8px;
+            margin-top: 8px;
+            font-size: 0.97rem;
+        }
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .recent-analyses-box {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 14px 8px;
+            margin-top: 20px;
+        }
+        .recent-title {
+            color: #1a237e;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .recent-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .recent-card {
+            background: #fff;
+            border-radius: 7px;
+            box-shadow: 0 1px 5px rgba(60, 72, 88, 0.07);
+            padding: 7px 8px;
+            min-width: 110px;
+            flex: 1 1 110px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .recent-card img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1.5px solid #4CAF50;
+        }
+        .recent-info {
+            flex: 1;
+        }
+        .recent-info h4 {
+            color: #1a237e;
+            font-size: 0.93rem;
+            font-weight: 600;
+            margin: 0 0 1px 0;
+        }
+        .recent-info p {
+            color: #388e3c;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        .recent-tags {
+            font-size: 0.74rem;
+            color: #3949ab;
+            margin-top: 1px;
+        }
+        @media (max-width: 700px) {
+            .main-box {
+                padding: 8px 2px;
+                max-width: 98vw;
+            }
+            .results-box, .recent-analyses-box {
+                padding: 7px 2px;
+            }
+            .recent-list {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Government Header -->
+    <div class="gov-header">
+        <img src="waste.png" alt="Gov Logo" class="gov-logo">
+        <div style="font-size:1.08rem;font-weight:600;">Municipal Waste Management System</div>
+        <div style="font-size:0.98rem;font-weight:400;opacity:0.8;">Government Portal - AI Waste Detection</div>
+    </div>
+
+    <div class="main-box">
+        <div class="section-title">AI Waste Detection for Municipal Management</div>
+        <div class="section-subtitle">
+            Upload a photo of waste material. The AI will identify the type, provide decomposition and recycling information, and suggest proper municipal disposal methods.
+        </div>
+        <!-- Upload Section -->
+        <div id="dropArea" class="upload-area">
+            <i class="fas fa-cloud-upload-alt text-2xl" style="color:#4CAF50"></i>
+            <p class="mt-2 mb-1" style="color:#1a237e;font-weight:500;">Drag & drop your image here</p>
+            <p class="mb-2" style="color:#388e3c;font-size:0.97rem;">or</p>
+            <button id="browseBtn" class="btn-primary">Browse Files</button>
+            <input type="file" id="fileInput" accept="image/*" class="hidden">
+            <p class="mt-3" style="color:#3949ab;font-size:0.85rem;">Supported formats: JPG, PNG, WebP (Max 5MB)</p>
+        </div>
+        <!-- Uploaded Image Preview -->
+        <div id="imagePreview" class="img-preview-box" style="display:none;">
+            <div style="position:relative;display:inline-block;">
+                <img id="previewImg" src="" alt="Preview">
+                <button id="removeImage" class="remove-btn" title="Remove image">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Analyze Button -->
+        <div style="text-align:center;">
+            <button id="analyzeBtn" class="btn-primary mt-3" style="display:none;">
+                <i class="fas fa-microscope mr-2"></i> Analyze Waste
+            </button>
+        </div>
+        <!-- Results Section -->
+        <div id="resultsSection" class="results-box" style="display:none;">
+            <div class="results-title">Analysis Results</div>
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" style="text-align:center;">
+                <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500 mb-3" style="margin:0 auto;"></div>
+                <p style="color:#388e3c;font-size:0.97rem;">AI is analyzing your image...</p>
+            </div>
+            <!-- Results Content -->
+            <div id="resultsContent" style="display:none;">
+                <div class="result-row">
+                    <span class="result-label">Waste Type:</span>
+                    <span id="wasteType" class="result-value"></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Description:</span>
+                    <span id="wasteDescription" class="result-value"></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Time to Decompose:</span>
+                    <span id="decomposeTime" class="result-value"></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Environmental Impact:</span>
+                    <span id="environmentalImpact" class="result-value"></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Toxicity Level:</span>
+                    <div class="progress-bar" style="margin-top:2px;">
+                        <div id="toxicityBar" class="progress-fill" style="width:0%;background:#4CAF50;"></div>
+                    </div>
+                    <span id="toxicityLevel" class="result-value" style="margin-left:8px;"></span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Recycling Suggestions:</span>
+                    <ul id="recyclingSuggestions" class="suggestion-list"></ul>
+                </div>
+                <div class="municipal-box">
+                    <div><b>Municipal Info:</b> <span id="municipalInfo"></span></div>
+                    <div style="margin-top:4px;"><b>Disposal Method:</b> <span id="disposalMethod"></span></div>
+                    <div style="margin-top:4px;"><b>Collection Schedule:</b> <span id="collectionSchedule"></span></div>
+                </div>
+                <div class="action-btns">
+                    <button id="newAnalysisBtn" class="btn-primary" style="flex:1;">
+                        <i class="fas fa-redo mr-2"></i> New Analysis
+                    </button>
+                    <button id="saveReportBtn" class="btn-primary" style="background:#3949ab;flex:1;">
+                        <i class="fas fa-save mr-2"></i> Save Report
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Recent Analyses Section -->
+        <div class="recent-analyses-box">
+            <div class="recent-title">Recent Analyses</div>
+            <div class="recent-list">
+                <div class="recent-card">
+                    <img src="https://picsum.photos/seed/plastic-bottle/80/80.jpg" alt="Plastic Bottle">
+                    <div class="recent-info">
+                        <h4>Plastic Bottle</h4>
+                        <p>PET Plastic • 450 years</p>
+                        <div class="recent-tags">Recyclable • Medium toxicity</div>
+                    </div>
+                </div>
+                <div class="recent-card">
+                    <img src="https://picsum.photos/seed/food-waste/80/80.jpg" alt="Food Waste">
+                    <div class="recent-info">
+                        <h4>Food Waste</h4>
+                        <p>Organic • 6 months</p>
+                        <div class="recent-tags">Compostable • Low toxicity</div>
+                    </div>
+                </div>
+                <div class="recent-card">
+                    <img src="https://picsum.photos/seed/battery/80/80.jpg" alt="Battery">
+                    <div class="recent-info">
+                        <h4>Battery</h4>
+                        <p>E-Waste • 100+ years</p>
+                        <div class="recent-tags">Special recycling • High toxicity</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <div class="footer">
+        &copy; 2025 Municipal Waste Management System | For official use only | Contact: info@municipal.gov
+    </div>
+    <script>
+        // Waste types for demo
+        const wasteTypes = [
+            {
+                name: "Plastic Bottle",
+                description: "PET plastic commonly used for beverage containers",
+                decomposeTime: "450 years",
+                environmentalImpact: "High",
+                toxicityLevel: 30,
+                toxicityText: "Medium",
+                recyclingSuggestions: [
+                    "Rinse and remove caps before recycling",
+                    "Check local recycling guidelines for PET plastics",
+                    "Consider reusable bottles to reduce waste",
+                    "Participate in bottle return programs if available"
+                ],
+                municipalInfo: "Plastic bottles should be placed in designated recycling bins. Many municipalities have specific collection days for recyclables.",
+                disposalMethod: "Recycling Bin",
+                collectionSchedule: "Every Wednesday"
+            },
+            {
+                name: "Food Waste",
+                description: "Organic waste from food preparation and leftovers",
+                decomposeTime: "6 months",
+                environmentalImpact: "Medium",
+                toxicityLevel: 10,
+                toxicityText: "Low",
+                recyclingSuggestions: [
+                    "Compost at home if possible",
+                    "Use municipal green waste collection programs",
+                    "Reduce food waste through better meal planning",
+                    "Consider food waste digesters for apartment living"
+                ],
+                municipalInfo: "Many cities offer green waste collection for composting. Check if your municipality provides special bins for organic waste.",
+                disposalMethod: "Green Waste Bin",
+                collectionSchedule: "Every Monday"
+            },
+            {
+                name: "Battery",
+                description: "Household battery containing heavy metals and chemicals",
+                decomposeTime: "100+ years",
+                environmentalImpact: "Very High",
+                toxicityLevel: 90,
+                toxicityText: "High",
+                recyclingSuggestions: [
+                    "Never dispose of batteries in regular trash",
+                    "Use designated e-waste collection points",
+                    "Participate in battery recycling drives",
+                    "Store used batteries safely until disposal"
+                ],
+                municipalInfo: "Batteries are hazardous waste. Use e-waste collection centers or special municipal drives for safe disposal.",
+                disposalMethod: "E-Waste Collection Center",
+                collectionSchedule: "First Saturday of every month"
+            }
+        ];
+
+        // File upload functionality
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const removeImage = document.getElementById('removeImage');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultsContent = document.getElementById('resultsContent');
+        const newAnalysisBtn = document.getElementById('newAnalysisBtn');
+        const saveReportBtn = document.getElementById('saveReportBtn');
+        const wasteType = document.getElementById('wasteType');
+        const wasteDescription = document.getElementById('wasteDescription');
+        const decomposeTime = document.getElementById('decomposeTime');
+        const environmentalImpact = document.getElementById('environmentalImpact');
+        const toxicityBar = document.getElementById('toxicityBar');
+        const toxicityLevel = document.getElementById('toxicityLevel');
+        const recyclingSuggestions = document.getElementById('recyclingSuggestions');
+        const municipalInfo = document.getElementById('municipalInfo');
+        const disposalMethod = document.getElementById('disposalMethod');
+        const collectionSchedule = document.getElementById('collectionSchedule');
+
+        // Browse button click
+        browseBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File input change
+        fileInput.addEventListener('change', handleFiles);
+
+        // Drag and drop events
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFiles({ target: { files: e.dataTransfer.files } });
+            }
+        });
+
+        // Handle files
+        function handleFiles(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.match('image.*')) {
+                alert('Please upload an image file');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                previewImg.src = event.target.result;
+                imagePreview.style.display = '';
+                analyzeBtn.style.display = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Remove image
+        removeImage.addEventListener('click', () => {
+            imagePreview.style.display = 'none';
+            analyzeBtn.style.display = 'none';
+            fileInput.value = '';
+            resultsSection.style.display = 'none';
+        });
+
+        // Load MobileNet model
+        let model;
+        (async function() {
+            model = await mobilenet.load();
+            console.log("AI Model Loaded ✅");
+        })();
+
+        // Analyze button click with AI
+        analyzeBtn.addEventListener('click', async () => {
+            resultsSection.style.display = '';
+            loadingSpinner.style.display = '';
+            resultsContent.style.display = 'none';
+
+            setTimeout(async () => {
+                // Run AI prediction on uploaded image
+                const predictions = await model.classify(previewImg);
+                console.log(predictions);
+
+                // Best match
+                const topPrediction = predictions[0].className.toLowerCase();
+
+                // Match AI label to your waste categories
+                let waste;
+                if (topPrediction.includes("bottle") || topPrediction.includes("plastic")) {
+                    waste = wasteTypes[0]; // Plastic Bottle
+                } else if (topPrediction.includes("banana") || topPrediction.includes("food") || topPrediction.includes("fruit")) {
+                    waste = wasteTypes[1]; // Food Waste
+                } else if (topPrediction.includes("battery")) {
+                    waste = wasteTypes[2]; // Battery
+                } else {
+                    waste = {
+                        name: "Unknown Waste",
+                        description: "The AI could not recognize this waste type clearly.",
+                        decomposeTime: "Varies",
+                        environmentalImpact: "Unknown",
+                        toxicityLevel: 50,
+                        toxicityText: "Medium",
+                        recyclingSuggestions: ["Please consult municipal waste guidelines."],
+                        municipalInfo: "Item not found in dataset. Please dispose responsibly.",
+                        disposalMethod: "General Waste Bin",
+                        collectionSchedule: "Check with local authorities"
+                    };
+                }
+
+                // Hide spinner & show results
+                loadingSpinner.style.display = 'none';
+                resultsContent.style.display = '';
+
+                // Fill UI with data
+                wasteType.textContent = waste.name;
+                wasteDescription.textContent = waste.description;
+                decomposeTime.textContent = waste.decomposeTime;
+                environmentalImpact.textContent = waste.environmentalImpact;
+                toxicityBar.style.width = waste.toxicityLevel + "%";
+                toxicityBar.style.background = waste.toxicityLevel < 40 ? "#4CAF50" : waste.toxicityLevel < 70 ? "#FFC107" : "#F44336";
+                toxicityLevel.textContent = waste.toxicityText + " toxicity";
+
+                recyclingSuggestions.innerHTML = "";
+                waste.recyclingSuggestions.forEach(suggestion => {
+                    const li = document.createElement('li');
+                    li.textContent = suggestion;
+                    recyclingSuggestions.appendChild(li);
+                });
+
+                municipalInfo.textContent = waste.municipalInfo;
+                disposalMethod.textContent = waste.disposalMethod;
+                collectionSchedule.textContent = waste.collectionSchedule;
+
+            }, 1000);
+        });
+
+        // New Analysis button
+        newAnalysisBtn.addEventListener('click', () => {
+            resultsSection.style.display = 'none';
+            imagePreview.style.display = 'none';
+            analyzeBtn.style.display = 'none';
+            fileInput.value = '';
+        });
+
+        // Save Report to Excel (multiple reports)
+        let allReports = [];
+        const wasteTypeEl = wasteType;
+        saveReportBtn.addEventListener('click', () => {
+            const reportData = {
+                wasteType: wasteTypeEl.textContent,
+                description: wasteDescription.textContent,
+                decomposeTime: decomposeTime.textContent,
+                environmentalImpact: environmentalImpact.textContent,
+                toxicity: toxicityLevel.textContent,
+                suggestions: Array.from(recyclingSuggestions.querySelectorAll("li")).map(li => li.textContent).join(", "),
+                date: new Date().toLocaleString()
+            };
+
+            allReports.push(reportData);
+
+            const ws = XLSX.utils.json_to_sheet(allReports);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Reports");
+            XLSX.writeFile(wb, "waste_reports.xlsx");
+
+            alert("Report added and Excel updated!");
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bin Status Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <style>
+    body, html { margin: 0; height: 100%; }
+    #map { height: 100%; width: 100%; }
+    .leaflet-popup-content img { max-width: 150px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    // Initialize world map, zoomed out first
+    const map = L.map('map').setView([20.5937, 78.9629], 3);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Add zoom control for quick India focus
+    const indiaBtn = L.control({position: 'topleft'});
+    indiaBtn.onAdd = function() {
+      const btn = L.DomUtil.create('button', 'leaflet-bar');
+      btn.innerHTML = "🇮🇳 India";
+      btn.style.padding = "5px";
+      btn.style.cursor = "pointer";
+      btn.onclick = () => map.setView([20.5937, 78.9629], 5);
+      return btn;
+    };
+    indiaBtn.addTo(map);
+
+    // Connect to backend
+    const socket = io("http://localhost:5000");
+
+    // Store bin markers
+    const binMarkers = {};
+
+    socket.on("bin_update", (data) => {
+      const { id, lat, lng, fill_level, image } = data;
+      let color = fill_level > 80 ? "red" : fill_level > 50 ? "orange" : "green";
+
+      if (binMarkers[id]) {
+        binMarkers[id].setLatLng([lat, lng]);
+        binMarkers[id].setStyle({ color: color });
+        binMarkers[id].bindPopup(
+          `<b>Bin ID:</b> ${id}<br>
+           <b>Fill Level:</b> ${fill_level}%<br>
+           <img src="${image}" />`
+        );
+      } else {
+        binMarkers[id] = L.circleMarker([lat, lng], {
+          radius: 10,
+          color: color,
+          fillOpacity: 0.8
+        }).addTo(map).bindPopup(
+          `<b>Bin ID:</b> ${id}<br>
+           <b>Fill Level:</b> ${fill_level}%<br>
+           <img src="${image}" />`
+        );
+      }
+    });
+  </script>
+</body>
+</html>

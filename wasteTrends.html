@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waste Collection Trends - Detailed View</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+      background: #f5f7fa;
+      color: #333;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .charts-container {
+      width: 100%;
+      max-width: 1200px;
+    }
+    .chart-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .chart-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #2b2d42;
+    }
+    .chart-container {
+      position: relative;
+      height: 400px;
+      width: 100%;
+    }
+    .back-button {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 8px 16px;
+      background: #4361ee;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+    .back-button:hover {
+      background: #3a56d4;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📊 Waste Collection Trends - India</h1>
+    <p>Detailed analysis of historical data and future projections</p>
+    <a href="homepage.html" class="back-button">← Back to Dashboard</a>
+  </div>
+  
+  <div class="charts-container">
+    <!-- Line Chart Card -->
+    <div class="chart-card">
+      <h2 class="chart-title">Historical Data & Forecast (2003-2027)</h2>
+      <div class="chart-container">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+    
+    <!-- Histogram Card -->
+    <div class="chart-card">
+      <h2 class="chart-title">Monthly Waste Distribution</h2>
+      <div class="chart-container">
+        <canvas id="histChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize line chart
+    const lineCtx = document.getElementById('lineChart').getContext('2d');
+    const lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Historical Waste (2003-2022)',
+                    data: [],
+                    borderColor: '#4361ee',
+                    backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Forecast Waste (2023-2027)',
+                    data: [],
+                    borderColor: '#f72585',
+                    borderDash: [5, 5],
+                    backgroundColor: 'rgba(247, 37, 133, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Waste (Million Tons)',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Year',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#333',
+                    bodyColor: '#333',
+                    borderColor: '#ddd',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: true
+                }
+            }
+        }
+    });
+
+    // Initialize histogram
+    const histCtx = document.getElementById('histChart').getContext('2d');
+    const histChart = new Chart(histCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Monthly Waste',
+                data: [],
+                backgroundColor: [
+                    'rgba(67, 97, 238, 0.7)',
+                    'rgba(67, 97, 238, 0.7)',
+                    'rgba(67, 97, 238, 0.7)',
+                    'rgba(67, 97, 238, 0.7)',
+                    'rgba(67, 97, 238, 0.7)',
+                    'rgba(67, 97, 238, 0.7)',
+                    'rgba(247, 37, 133, 0.7)',
+                    'rgba(247, 37, 133, 0.7)',
+                    'rgba(247, 37, 133, 0.7)',
+                    'rgba(247, 37, 133, 0.7)',
+                    'rgba(247, 37, 133, 0.7)',
+                    'rgba(247, 37, 133, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(67, 97, 238, 1)',
+                    'rgba(67, 97, 238, 1)',
+                    'rgba(67, 97, 238, 1)',
+                    'rgba(67, 97, 238, 1)',
+                    'rgba(67, 97, 238, 1)',
+                    'rgba(67, 97, 238, 1)',
+                    'rgba(247, 37, 133, 1)',
+                    'rgba(247, 37, 133, 1)',
+                    'rgba(247, 37, 133, 1)',
+                    'rgba(247, 37, 133, 1)',
+                    'rgba(247, 37, 133, 1)',
+                    'rgba(247, 37, 133, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Waste (Million Tons)',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#333',
+                    bodyColor: '#333',
+                    borderColor: '#ddd',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 8
+                }
+            }
+        }
+    });
+
+    // Connect to backend
+    const socket = io("http://localhost:5000");
+
+    // Debug: Log connection
+    socket.on("connect", () => {
+        console.log("✅ Connected to backend");
+    });
+
+    socket.on("disconnect", () => {
+        console.log("❌ Disconnected from backend");
+    });
+
+    // Receive data and update charts
+    socket.on("waste_scatter_update", (data) => {
+        console.log("📊 Data received:", data);
+        
+        // Combine historical and forecast data
+        const allYears = [...data.historical.years, ...data.forecast.years];
+        
+        // Update line chart
+        lineChart.data.labels = allYears;
+        lineChart.data.datasets[0].data = data.historical.waste;
+        lineChart.data.datasets[1].data = data.forecast.waste;
+        lineChart.update();
+
+        // Generate monthly data for histogram (since backend doesn't provide it)
+        // In a real app, this would come from the backend
+        const monthlyData = Array.from({length: 12}, () => Math.floor(Math.random() * 30) + 10);
+        histChart.data.datasets[0].data = monthlyData;
+        histChart.update();
+    });
+  </script>
+</body>
+</html>

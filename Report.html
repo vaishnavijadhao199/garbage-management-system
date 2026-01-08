@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoWaste AI - Report Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saverjs@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
+    <style>
+        :root {
+            --primary: #4617d4;
+            --secondary: #2a9d8f;
+            --accent: #e9c46a;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #38b2ac;
+            --warning: #f77f00;
+            --danger: #d62828;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        /* Reduce header size */
+        header, .gov-header {
+            padding: 5px 0 6px 0 !important;
+            font-size: 1rem !important;
+        }
+        .gov-logo {
+            width: 40px !important;
+            height: 40px !important;
+            margin-bottom: 2px !important;
+        }
+        
+        .gov-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section {
+            padding: 4rem 0;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .card {
+            width: 100%;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 1.5rem 1.2rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(60,72,88,0.08);
+        }
+        
+        h1, h2, h3 {
+            text-align: center;
+            color: #1a237e;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0a3a62;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #21867a;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #2c9d91;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e69500;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c42626;
+        }
+        
+        /* Example: Improved UI for Excel/Word Report Section (no overlapping, clean layout) */
+        .report-section-container {
+            max-width: 950px;
+            margin: 32px auto;
+            padding: 0 1rem;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1a237e;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+        .report-flex-row {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .excel-container, .word-container {
+            background: #f8fafc;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(60,72,88,0.08);
+            padding: 1.2rem 1rem;
+            min-width: 350px;
+            max-width: 440px;
+            width: 100%;
+            min-height: 400px;
+            margin-bottom: 1.5rem;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+        @media (max-width: 950px) {
+            .report-flex-row { flex-direction: column; gap: 1.2rem; }
+            .excel-container, .word-container { max-width: 98vw; }
+        }
+        
+        .excel-container, .word-container {
+            max-width: 900px;
+            min-width: 350px;
+            width: 98%;
+            margin: 0 auto 1.5rem auto;
+            height: 400px;
+            min-height: 400px;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1.2rem;
+            box-sizing: border-box;
+        }
+        
+        .excel-container {
+            width: 100%;
+            height: 350px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .excel-toolbar {
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .excel-table th, .excel-table td {
+            border: 1px solid #dee2e6;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        
+        .excel-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .excel-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .excel-table tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        .excel-table input, .excel-table select, .excel-table textarea {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            resize: none;
+        }
+        
+        .excel-table input:focus, .excel-table select:focus, .excel-table textarea:focus {
+            outline: none;
+            background-color: #fff;
+            box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.25);
+        }
+        
+        .word-container {
+            width: 100%;
+            min-height: 350px;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .word-toolbar {
+            background-color: #f8f9fa;
+            padding: 0.75rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .word-editor {
+            min-height: 250px;
+            outline: none;
+            padding: 1rem;
+            line-height: 1.6;
+        }
+        
+        .word-page {
+            display: none;
+        }
+        
+        .word-page.active {
+            display: block;
+        }
+        
+        .page-navigation {
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .email-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.25);
+        }
+        
+        .saved-reports {
+            margin-top: 3rem;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--secondary);
+            transition: transform 0.3s ease;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .report-title {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .report-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .report-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .footer {
+            background-color: var(--primary);
+            color: white;
+            padding: 3rem 0 2rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: var(--dark);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1001;
+            display: none;
+        }
+        
+        .notification.success {
+            background-color: var(--success);
+        }
+        
+        .notification.error {
+            background-color: var(--danger);
+        }
+        
+        @media (max-width: 768px) {
+            .section {
+                padding: 2rem 0;
+            }
+            
+            .excel-toolbar {
+                flex-wrap: wrap;
+            }
+            
+            .word-toolbar {
+                flex-wrap: wrap;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+        }
+
+        /* Email Modal Styles */
+        .email-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .email-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .email-modal h2 {
+            text-align: center;
+            color: #1a237e;
+            margin-bottom: 1.5rem;
+        }
+        
+        .email-form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .email-form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .email-form-group input, .email-form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+        
+        .email-form-group input:focus, .email-form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.25);
+        }
+        
+        .email-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Government Header -->
+    <header class="gov-header">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="waste.png" alt="Government Emblem" class="gov-logo">
+                    <div>
+                        <h1 class="text-xl font-bold"><b style="color: white;">Municipal Corporation</b></h1>
+                        <p class="text-sm opacity-80"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold text-center mb-2">Report Generator</h1>
+            <p class="text-center text-gray-600 mb-8">Create comprehensive waste management reports with Excel and Word documents</p>
+            
+            <!-- Report Form -->
+            <div class="card mb-8">
+                <div class="p-6">
+                    <h2 class="text-2xl font-semibold mb-6">Create New Report</h2>
+                    
+                    <!-- Excel Section -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold mb-4">Excel Data Sheet</h3>
+                        
+                        <!-- Excel Container -->
+                        <div class="excel-container" style="height: 300px; overflow-y:auto;">
+                          <div class="excel-toolbar">
+                            <button class="btn btn-secondary btn-sm" onclick="addExcelRow()">Add Row</button>
+                            <button class="btn btn-secondary btn-sm" onclick="deleteExcelRow()">Delete Row</button>
+                            <button class="btn btn-primary btn-sm" onclick="exportToExcel()">Export to Excel</button>
+                          </div>
+                          <table class="excel-table" id="excelTable">
+                            <thead>
+                              <tr>
+                                <th>Waste Type</th>
+                                <th>Quantity (kg)</th>
+                                <th>Collection Date</th>
+                                <th>Location</th>
+                                <th>Disposal Method</th>
+                                <th>Notes</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><input type="text" value="Plastic"></td>
+                                <td><input type="number" value="25"></td>
+                                <td><input type="date" value="2023-10-15"></td>
+                                <td><input type="text" value="Main Street"></td>
+                                <td>
+                                  <select>
+                                    <option>Recycling</option>
+                                    <option>Landfill</option>
+                                    <option>Composting</option>
+                                    <option>Incineration</option>
+                                  </select>
+                                </td>
+                                <td><input type="text" value="PET bottles"></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Word Section -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold mb-4">Word Document</h3>
+                        
+                        <!-- Word Container -->
+                        <div class="word-container" style="height: 350px; overflow-y:auto;">
+                          <div class="word-toolbar">
+                            <button class="btn btn-secondary btn-sm" onclick="formatText('bold')">B</button>
+                            <button class="btn btn-secondary btn-sm" onclick="formatText('italic')">I</button>
+                            <button class="btn btn-secondary btn-sm" onclick="formatText('underline')">U</button>
+                            <button class="btn btn-primary btn-sm" onclick="exportToWord()">Export to Word</button>
+                          </div>
+                          <div id="wordEditor" class="word-editor" contenteditable="true" style="height:250px; overflow-y:auto;">
+                            <h2>Waste Management Report</h2>
+                            <p>Write your report here...</p>
+                          </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Section -->
+                    <div class="email-section" style="width: 80%; max-width: 600px; margin:2rem auto;">
+                      <h3>Send Report via Email</h3>
+                      <div class="form-group">
+                        <label>Recipient Email</label>
+                        <input type="email" id="recipientEmail" class="form-control" placeholder="Enter recipient email">
+                      </div>
+                      <div class="form-group">
+                        <label>Subject</label>
+                        <input type="text" id="emailSubject" class="form-control" value="Waste Management Report">
+                      </div>
+                      <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="emailMessage" class="form-control" rows="3">Please find attached the waste management report.</textarea>
+                      </div>
+                      <button class="btn btn-success" onclick="sendEmailJS()">Send Email</button>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-4 mt-6">
+                        <button class="btn btn-success" onclick="saveReport()">
+                            <i class="fas fa-save mr-2"></i> Save Report
+                        </button>
+                        <button class="btn btn-warning" onclick="downloadReport()">
+                            <i class="fas fa-download mr-2"></i> Download Report
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-redo mr-2"></i> Reset Form
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Saved Reports -->
+            <div class="saved-reports">
+                <h2 class="text-2xl font-semibold mb-6">Reports Timeline</h2>
+                <div id="savedReportsContainer"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <p>&copy; 2023 Municipal Corporation. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Modal -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Email Sent Successfully</h2>
+            <p>Your report has been sent to the specified email address.</p>
+            <button class="btn btn-primary mt-4" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div class="email-modal">
+        <div class="email-modal-content">
+            <span class="close" onclick="document.querySelector('.email-modal').style.display='none'">&times;</span>
+            <h2>Send Report via Email</h2>
+            <div class="email-form-group">
+                <label for="recipientEmail">Recipient Email</label>
+                <input type="email" id="recipientEmail" placeholder="Enter recipient email" autocomplete="off">
+            </div>
+            <div class="email-form-group">
+                <label for="emailSubject">Subject</label>
+                <input type="text" id="emailSubject" placeholder="Subject" autocomplete="off">
+            </div>
+            <div class="email-form-group">
+                <label for="emailMessage">Message</label>
+                <textarea id="emailMessage" placeholder="Type your message here"></textarea>
+            </div>
+            <div class="email-actions">
+                <button class="btn btn-success" onclick="sendEmailJS()">Send Email</button>
+                <button class="btn btn-warning" onclick="document.querySelector('.email-modal').style.display='none'">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize EmailJS (replace with your public key)
+        (function(){
+          emailjs.init("YOUR_PUBLIC_KEY");
+        })();
+
+        function sendEmailJS() {
+          const email = document.getElementById('recipientEmail').value;
+          const subject = document.getElementById('emailSubject').value;
+          const message = document.getElementById('emailMessage').value;
+
+          if (!email) {
+            showNotification("❌ Please enter a recipient email address", "error");
+            return;
+          }
+
+          emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+            to_email: email,
+            subject: subject,
+            message: message
+          })
+          .then(function() {
+            showNotification("✅ Email sent successfully!", "success");
+          }, function(error) {
+            showNotification("❌ Failed to send email: " + error.text, "error");
+          });
+        }
+
+        let pages = [
+            {
+                content: `<h2>Waste Management Report</h2>
+                <p>This report provides an overview of waste management activities and recommendations for improvement.</p>
+                <h3>Executive Summary</h3>
+                <p>The waste management system has shown significant improvements in recycling rates and waste reduction over the past quarter.</p>
+                <h3>Key Findings</h3>
+                <ul>
+                    <li>Plastic waste recycling increased by 15%</li>
+                    <li>Organic waste composting initiatives reduced landfill usage by 20%</li>
+                    <li>Community engagement programs showed positive results</li>
+                </ul>
+                <h3>Recommendations</h3>
+                <ol>
+                    <li>Expand recycling facilities in underserved areas</li>
+                    <li>Increase public awareness campaigns</li>
+                    <li>Implement more frequent collection schedules</li>
+                </ol>`
+            }
+        ];
+        
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            const activeEditor = document.getElementById('wordEditor');
+            activeEditor.focus();
+        }
+        
+        function exportToWord() {
+            const wordEditor = document.getElementById('wordEditor');
+            const content = wordEditor.innerHTML;
+            
+            const doc = new docx.Document();
+            
+            doc.addSection({
+                properties: {},
+                children: [
+                    new docx.Paragraph({
+                        text: "Waste Management Report",
+                        heading: docx.HeadingLevel.HEADING_1
+                    })
+                ]
+            });
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            
+            const elements = tempDiv.childNodes;
+            for (const element of elements) {
+                if (element.nodeType === 1) {
+                    if (element.tagName === 'H2') {
+                        doc.addParagraph({
+                            text: element.textContent,
+                            heading: docx.HeadingLevel.HEADING_2
+                        });
+                    } else if (element.tagName === 'H3') {
+                        doc.addParagraph({
+                            text: element.textContent,
+                            heading: docx.HeadingLevel.HEADING_3
+                        });
+                    } else if (element.tagName === 'P') {
+                        doc.addParagraph(element.textContent);
+                    }
+                }
+            }
+            
+            docx.Packer.toBlob(doc).then(blob => {
+                saveAs(blob, "Waste_Management_Report.docx");
+                showNotification("Word document exported successfully!", "success");
+            });
+        }
+        
+        function closeModal() {
+            document.getElementById('emailModal').style.display = 'none';
+        }
+        
+        function saveReport() {
+            const reportTitle = "Waste Report " + new Date().toLocaleDateString();
+            const deadline = new Date();
+            deadline.setDate(deadline.getDate() + 7);
+
+            const reportCard = `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-title">${reportTitle}</div>
+                        <div class="report-date">Deadline: ${deadline.toDateString()}</div>
+                    </div>
+                    <p>Your report has been saved and is due by the above deadline.</p>
+                    <div class="report-actions">
+                        <button class="btn btn-success btn-sm" onclick="downloadReport()">Download</button>
+                        <button class="btn btn-warning btn-sm" onclick="sendEmail()">Email</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('savedReportsContainer').innerHTML += reportCard;
+            showNotification("Report saved with a deadline!", "success");
+        }
+        
+        function downloadReport() {
+            exportToExcel();
+            exportToWord();
+        }
+        
+        function resetForm() {
+            if (confirm("Are you sure you want to reset the form?")) {
+                document.getElementById('excelTable').getElementsByTagName('tbody')[0].innerHTML = `
+                    <tr>
+                        <td><input type="text" value="Plastic"></td>
+                        <td><input type="number" value="25"></td>
+                        <td><input type="date" value="2023-10-15"></td>
+                        <td><input type="text" value="Main Street"></td>
+                        <td><select><option>Recycling</option><option>Landfill</option></select></td>
+                        <td><input type="text" value="PET bottles"></td>
+                    </tr>
+                `;
+                
+                document.getElementById('wordEditor').innerHTML = '<h2>Waste Management Report</h2><p>Write your report here...</p>';
+                document.getElementById('recipientEmail').value = '';
+                document.getElementById('emailSubject').value = 'Waste Management Report';
+                document.getElementById('emailMessage').value = 'Please find attached the waste management report.';
+                
+                showNotification("Form reset successfully!", "success");
+            }
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3500);
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('emailModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function exportToExcel() {
+            const table = document.getElementById('excelTable');
+            if (!table) {
+                showNotification("Excel table not found!", "error");
+                return;
+            }
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Waste Data"});
+            XLSX.writeFile(wb, "Waste_Management_Report.xlsx");
+            showNotification("Excel file exported successfully!", "success");
+        }
+
+        function addExcelRow() {
+            showNotification("Add row functionality", "success");
+        }
+
+        function deleteExcelRow() {
+            showNotification("Delete row functionality", "success");
+        }
+    </script>
+</body>
+</html>

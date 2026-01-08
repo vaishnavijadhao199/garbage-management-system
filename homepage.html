@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoWaste - Government Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f6fa;
+            min-height: 100vh;
+        }
+        .gov-header {
+            background: #1a237e;
+            color: #fff;
+            padding: 24px 0 16px 0;
+            text-align: center;
+            border-bottom: 4px solid #3949ab;
+        }
+        .gov-logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 8px;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(60, 72, 88, 0.08);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #3949ab;
+        }
+        .title-glow {
+            text-shadow: 0 0 10px rgba(60, 72, 88, 0.1);
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e3e6f3;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Government Header -->
+    <div class="gov-header">
+        <img src="waste.png" alt="Gov Logo" class="gov-logo">
+        <div style="font-size:1.2rem;font-weight:600;">Municipal Waste Management System</div>
+        <div style="font-size:1rem;font-weight:400;opacity:0.8;">Government Portal</div>
+    </div>
+    <!-- Navigation -->
+    <nav class="glass-effect py-4 px-6 mb-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold text-[#1a237e] title-glow">EcoWaste</h1>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="templates/DashBoard.html" class="nav-link text-[#3949ab] font-semibold">Dashboard</a>
+                <a href="wasteBin.html" class="nav-link text-[#3949ab] font-semibold">Waste Bins</a>
+               <!--<a href="#" class="nav-link text-[#3949ab] font-semibold">Recycling</a>-->
+                <a href="Analytics.html" class="nav-link text-[#3949ab] font-semibold">Analytics</a>
+                <a href="Report.html" class="nav-link text-[#3949ab] font-semibold">Reports</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <i class="fas fa-bell text-[#3949ab] text-xl"></i>
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="https://picsum.photos/seed/user123/40/40.jpg" alt="User" class="rounded-full border border-[#3949ab]">
+                    <span class="text-[#3949ab] font-semibold">John Doe</span>
+                </div>
+                <button class="text-[#3949ab]" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <!-- Main content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Welcome section -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-[#1a237e] mb-2">Welcome back, John!</h2>
+            <p class="text-[#3949ab]">Here's what's happening with your municipal waste management system today.</p>
+        </div>
+        <!-- Stats cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="card rounded-xl p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[#3949ab] mb-1">Total Waste Collected</p>
+                        <h3 class="text-2xl font-bold text-[#1a237e]">2,450 kg</h3>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-trash text-green-700 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="progress-bar">
+                        <div class="progress-fill bg-green-600" style="width: 75%"></div>
+                    </div>
+                    <p class="text-[#3949ab] text-sm mt-1">75% of monthly target</p>
+                </div>
+            </div>
+            <div class="card rounded-xl p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[#3949ab] mb-1">Recycling Rate</p>
+                        <h3 class="text-2xl font-bold text-[#1a237e]">68%</h3>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-recycle text-blue-700 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="progress-bar">
+                        <div class="progress-fill bg-blue-600" style="width: 68%"></div>
+                    </div>
+                    <p class="text-[#3949ab] text-sm mt-1">+5% from last month</p>
+                </div>
+            </div>
+            <div class="card rounded-xl p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[#3949ab] mb-1">Active Bins</p>
+                        <h3 class="text-2xl font-bold text-[#1a237e]">142/150</h3>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-box text-yellow-700 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="progress-bar">
+                        <div class="progress-fill bg-yellow-500" style="width: 95%"></div>
+                    </div>
+                    <p class="text-[#3949ab] text-sm mt-1">8 bins need maintenance</p>
+                </div>
+            </div>
+            <div class="card rounded-xl p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[#3949ab] mb-1">CO2 Saved</p>
+                        <h3 class="text-2xl font-bold text-[#1a237e]">1.2 tons</h3>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i class="fas fa-leaf text-purple-700 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="progress-bar">
+                        <div class="progress-fill bg-purple-600" style="width: 60%"></div>
+                    </div>
+                    <p class="text-[#3949ab] text-sm mt-1">Equivalent to 30 trees planted</p>
+                </div>
+            </div>
+        </div>
+        <!-- Charts and maps section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Waste collection chart (preview) -->
+            <div class="lg:col-span-2 card rounded-xl p-6 cursor-pointer hover:bg-gray-50" onclick="window.location.href='wasteTrends.html'">
+                <h3 class="text-xl font-bold text-[#1a237e] mb-4">Waste Collection Trends</h3>
+                <div class="h-80 flex items-center justify-center">
+                    <canvas id="previewChart"></canvas>
+                </div>
+                <p class="text-[#3949ab] text-sm mt-2 text-center">Click for detailed charts</p>
+            </div>
+            <!-- Bin status map preview -->
+            <div class="card rounded-xl p-6 cursor-pointer hover:bg-gray-50" onclick="window.location.href='binMap.html'">
+                <h3 class="text-xl font-bold text-[#1a237e] mb-4">Bin Status Map</h3>
+                <div class="h-56 flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-map-marked-alt text-5xl text-[#3949ab] mb-4"></i>
+                        <p class="text-[#3949ab]">Click to open interactive map</p>
+                        <p class="text-[#3949ab] text-sm mt-2">Real-time bin monitoring</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Government Schemes Section (carousel style, no marquee) -->
+        <div class="card rounded-xl p-6">
+            <h3 class="text-xl font-bold text-[#1a237e] mb-4"><center>Government Schemes</center></h3>
+            <div class="flex items-center justify-between mb-4">
+                <button id="prevScheme" class="bg-[#3949ab] text-white px-3 py-1 rounded-full shadow hover:bg-[#1a237e] focus:outline-none">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="flex-1 flex justify-center gap-2" id="schemeTags">
+                    <!-- Category tags will be loaded here -->
+                </div>
+                <button id="nextScheme" class="bg-[#3949ab] text-white px-3 py-1 rounded-full shadow hover:bg-[#1a237e] focus:outline-none">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="w-full flex justify-center">
+                <div class="w-full max-w-2xl" id="schemesCarousel">
+                    <!-- Scheme cards will be loaded here by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js & Socket.IO for preview chart (place before </body>) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+      // Connect to backend (indianWaste.py)
+      const socket = io("http://localhost:5000");
+
+      // Preview chart (Line chart of last 10 years)
+      const ctx = document.getElementById("previewChart").getContext("2d");
+      const previewChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [{
+            label: "Waste (Million Tons)",
+            borderColor: "#3949ab",
+            backgroundColor: "rgba(57,73,171,0.2)",
+            data: [],
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "#3949ab" } },
+            y: { ticks: { color: "#3949ab" } }
+          }
+        }
+      });
+
+      // Listen for live data
+      socket.on("waste_scatter_update", (data) => {
+        const years = data.historical.years;
+        const waste = data.historical.waste;
+
+        // Only show last 10 years in preview
+        previewChart.data.labels = years.slice(-10);
+        previewChart.data.datasets[0].data = waste.slice(-10);
+        previewChart.update();
+      });
+    </script>
+    <script>
+const governmentSchemes = [
+  {
+    title: "Swachh Bharat Mission – Urban (SBM-U)",
+    description: "For sanitation & waste management in urban areas.",
+    category: "Sanitation",
+    website: "https://swachhbharatmission.gov.in/",
+    image: "data:image/jpeg;base64,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"
+  },
+  {
+    title: "Pradhan Mantri Awas Yojana – Urban (PMAY-U)",
+    description: "Housing for all in urban areas.",
+    category: "Housing",
+    website: "https://pmay-urban.gov.in/",
+    image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    title: "Smart Cities Mission",
+    description: "Digital & sustainable infrastructure for 100 cities.",
+    category: "Infrastructure",
+    website: "https://smartcities.gov.in/",
+    image: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    title: "National Clean Air Programme (NCAP)",
+    description: "Pollution control in 122 Indian cities.",
+    category: "Environment",
+    website: "https://ncap.niti.gov.in/",
+    image: "https://images.unsplash.com/photo-1542856391-010fb87dcfed?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    title: "National Urban Digital Mission (NUDM)",
+    description: "Digital governance framework for all ULBs.",
+    category: "Digital",
+    website: "https://nudm.mohua.gov.in/",
+    image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    title: "National Urban Health Mission (NUHM)",
+    description: "Health services for urban poor.",
+    category: "Health",
+    website: "https://nhm.gov.in/index1.php?lang=1&level=1&sublinkid=1048&lid=634",
+    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+  }
+];
+
+const categories = [...new Set(governmentSchemes.map(s => s.category))];
+let currentCategory = "All";
+let currentIndex = 0;
+
+function getCategoryColor(category) {
+    switch(category) {
+        case "Sanitation": return "bg-blue-100 text-blue-700";
+        case "Housing": return "bg-green-100 text-green-700";
+        case "Infrastructure": return "bg-yellow-100 text-yellow-700";
+        case "Environment": return "bg-purple-100 text-purple-700";
+        case "Digital": return "bg-pink-100 text-pink-700";
+        case "Health": return "bg-indigo-100 text-indigo-700";
+        default: return "bg-gray-100 text-gray-700";
+    }
+}
+
+function renderTags() {
+    const tagDiv = document.getElementById('schemeTags');
+    tagDiv.innerHTML = `<span class="filter-tag px-3 py-1 rounded-full text-xs font-semibold mx-1 cursor-pointer ${currentCategory === "All" ? "bg-[#3949ab] text-white" : "bg-gray-100 text-gray-700"}" onclick="filterSchemes('All')">All</span>` +
+        categories.map(cat =>
+            `<span class="filter-tag px-3 py-1 rounded-full text-xs font-semibold mx-1 cursor-pointer ${currentCategory === cat ? "bg-[#3949ab] text-white" : getCategoryColor(cat)}" onclick="filterSchemes('${cat}')">${cat}</span>`
+        ).join('');
+}
+
+function filterSchemes(category) {
+    currentCategory = category;
+    currentIndex = 0;
+    renderTags();
+    renderCarousel();
+}
+
+function getFilteredSchemes() {
+    if (currentCategory === "All") return governmentSchemes;
+    return governmentSchemes.filter(s => s.category === currentCategory);
+}
+
+function renderCarousel() {
+    const schemes = getFilteredSchemes();
+    const carousel = document.getElementById('schemesCarousel');
+    if (schemes.length === 0) {
+        carousel.innerHTML = `<div class="text-center text-[#3949ab] py-8">No schemes found.</div>`;
+        return;
+    }
+    // Show only one scheme at a time, but box is always fully visible
+    const scheme = schemes[currentIndex];
+    carousel.innerHTML = `
+        <div class="flex flex-col bg-white rounded-lg shadow hover:shadow-lg transition cursor-pointer w-full" onclick="window.open('${scheme.website}', '_blank')">
+            <div class="h-40 w-full rounded-t-lg bg-cover bg-center relative" style="background-image:url('${scheme.image}')">
+                <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(scheme.category)} shadow">${scheme.category}</span>
+            </div>
+            <div class="flex-1 flex flex-col p-4">
+                <h4 class="font-bold text-[#1a237e] mb-1 text-base">${scheme.title}</h4>
+                <p class="text-[#3949ab] text-sm mb-2 flex-1">${scheme.description}</p>
+                <a href="${scheme.website}" target="_blank" class="text-[#3949ab] hover:underline text-xs font-semibold mt-auto flex items-center" onclick="event.stopPropagation()">
+                    Visit Official Website <i class="fas fa-external-link-alt ml-1"></i>
+                </a>
+            </div>
+        </div>
+        <div class="flex justify-center mt-3 gap-1">
+            ${schemes.map((_, i) =>
+                `<span class="inline-block w-2 h-2 rounded-full ${i === currentIndex ? 'bg-[#3949ab]' : 'bg-gray-300'}"></span>`
+            ).join('')}
+        </div>
+    `;
+}
+
+document.getElementById('prevScheme').onclick = function() {
+    const schemes = getFilteredSchemes();
+    currentIndex = (currentIndex - 1 + schemes.length) % schemes.length;
+    renderCarousel();
+};
+document.getElementById('nextScheme').onclick = function() {
+    const schemes = getFilteredSchemes();
+    currentIndex = (currentIndex + 1) % schemes.length;
+    renderCarousel();
+};
+
+// Expose filterSchemes globally for inline onclick
+window.filterSchemes = filterSchemes;
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderTags();
+    renderCarousel();
+});
+    </script>
+</body>
+</html>

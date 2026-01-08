@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EcoWaste AI - Waste Analytics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f8f9fa;}
+    .gov-header {
+      background: #1a237e;
+      color: #fff;
+      text-align: center;
+      padding: 18px 0 10px 0;
+      border-bottom: 3px solid #3949ab;
+    }
+    .gov-logo {
+      width: 44px;
+      height: 44px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    .dashboard-container {
+      max-width: 900px;
+      margin: 28px auto 0 auto;
+    }
+    .main-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a237e;
+      margin: 18px 0 10px 0;
+      letter-spacing: 0.5px;
+    }
+    .filter-section { background:white; padding:18px; margin:18px 0; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.08);}
+    .filter-group { display:flex; gap:15px; flex-wrap:wrap; }
+    .filter-group label { font-weight:bold; margin-right:5px; }
+    .filter-group select { padding:6px 10px; border:1px solid #ccc; border-radius:5px;}
+    .chart-container { background:white; border-radius:10px; padding:18px; margin:18px 0; box-shadow:0 4px 10px rgba(0,0,0,0.08); }
+    canvas { width:100% !important; height:340px !important; }
+    @media (max-width: 1000px) {
+      .dashboard-container { max-width: 98vw; }
+    }
+    @media (max-width: 700px) {
+      .main-title { font-size: 1.2rem; }
+      .filter-section, .chart-container { padding: 10px; margin: 10px 0; }
+      canvas { height: 220px !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Government Header -->
+  <div class="gov-header">
+    <img src="waste.png" alt="Gov Logo" class="gov-logo">
+    <span style="font-size:1.1rem;font-weight:600;">Municipal Waste Management Analytics Portal</span>
+  </div>
+
+  <div class="dashboard-container">
+    <div class="main-title">EcoWaste AI - Waste Analytics Dashboard</div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <h3 style="margin-top:0;">Filter Data</h3>
+      <div class="filter-group">
+        <div>
+          <label>Region:</label>
+          <select id="regionFilter">
+            <option value="all">All Regions</option>
+            <option value="north-america">North America</option>
+            <option value="europe">Europe</option>
+            <option value="asia">Asia</option>
+            <option value="africa">Africa</option>
+            <option value="south-america">South America</option>
+            <option value="oceania">Oceania</option>
+          </select>
+        </div>
+        <div>
+          <label>Year:</label>
+          <select id="yearFilter">
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+          </select>
+        </div>
+        <div>
+          <label>Waste Type:</label>
+          <select id="wasteTypeFilter">
+            <option value="all">All</option>
+            <option value="organic">Organic</option>
+            <option value="plastic">Plastic</option>
+            <option value="paper">Paper</option>
+            <option value="glass">Glass</option>
+            <option value="metal">Metal</option>
+            <option value="e-waste">E-Waste</option>
+          </select>
+        </div>
+        <div>
+          <button id="applyFilters">Apply Filters</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="chart-container">
+      <h3 style="margin-top:0;">Top Countries (with India)</h3>
+      <canvas id="countryChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <h3 style="margin-top:0;">Waste Type Distribution</h3>
+      <canvas id="typeChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <h3 style="margin-top:0;">Recycling Trend</h3>
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+<script>
+  // 📊 Demo dataset (you can replace with API/AI data)
+  const wasteData = {
+    "2023": {
+      "asia": { India: 180, China: 400, Japan: 150, Others: 200 },
+      "europe": { Germany: 90, France: 80, UK: 100, Others: 150 },
+      "north-america": { USA: 300, Canada: 70, Mexico: 120 },
+    },
+    "2022": {
+      "asia": { India: 170, China: 380, Japan: 140, Others: 190 },
+      "europe": { Germany: 85, France: 78, UK: 95, Others: 140 },
+      "north-america": { USA: 280, Canada: 68, Mexico: 110 },
+    },
+    "2021": {
+      "asia": { India: 160, China: 350, Japan: 130, Others: 180 },
+      "europe": { Germany: 80, France: 75, UK: 92, Others: 130 },
+      "north-america": { USA: 260, Canada: 65, Mexico: 105 },
+    }
+  };
+
+  // Waste type % (for all regions/years)
+  const wasteTypeData = {
+    "organic": 44, "plastic": 12, "paper": 17, "glass": 5, "metal": 4, "e-waste": 2
+  };
+
+  // Recycling rates
+  const recyclingTrend = [28, 30, 34, 37, 42]; // Example growth
+
+  // Color palettes for charts
+  const countryColors = [
+    "#1976d2", "#43a047", "#fbc02d", "#e53935", "#8e24aa", "#00838f", "#6d4c41"
+  ];
+  const wasteTypeColors = [
+    "#4CAF50", "#f44336", "#2196f3", "#ff9800", "#9c27b0", "#607d8b"
+  ];
+  const trendColor = "#2a9d8f";
+
+  // 📈 Chart instances
+  let countryChart, typeChart, trendChart;
+
+  function renderCharts(region="all", year="2023", wasteType="all") {
+    const ctx1 = document.getElementById("countryChart").getContext("2d");
+    const ctx2 = document.getElementById("typeChart").getContext("2d");
+    const ctx3 = document.getElementById("trendChart").getContext("2d");
+
+    // Destroy old charts before re-render
+    if (countryChart) countryChart.destroy();
+    if (typeChart) typeChart.destroy();
+    if (trendChart) trendChart.destroy();
+
+    // Get region data
+    let countryData = wasteData[year][region] || {};
+    if(region==="all"){
+      // merge all regions
+      countryData = {};
+      Object.values(wasteData[year]).forEach(r => {
+        for(const c in r){
+          countryData[c] = (countryData[c]||0) + r[c];
+        }
+      });
+    }
+
+    // Filter countryData by wasteType if not "all"
+    // For demo, let's simulate: if wasteType is not "all", reduce all values by 50% except for the selected type
+    let filteredCountryData = {...countryData};
+    if (wasteType !== "all") {
+      // Only for demo: highlight India for "organic", China for "plastic", etc.
+      Object.keys(filteredCountryData).forEach(c => {
+        if (
+          (wasteType === "organic" && c === "India") ||
+          (wasteType === "plastic" && c === "China") ||
+          (wasteType === "paper" && c === "Japan") ||
+          (wasteType === "glass" && c === "Germany") ||
+          (wasteType === "metal" && c === "USA") ||
+          (wasteType === "e-waste" && c === "Others")
+        ) {
+          // keep as is
+        } else {
+          filteredCountryData[c] = Math.round(filteredCountryData[c] * 0.5);
+        }
+      });
+    }
+
+    // Render Country Chart (Pin/Bar Chart)
+    countryChart = new Chart(ctx1, {
+      type: "bar",
+      data: {
+        labels: Object.keys(filteredCountryData),
+        datasets: [{
+          label: "Waste (Million Tons)",
+          data: Object.values(filteredCountryData),
+          backgroundColor: countryColors.slice(0, Object.keys(filteredCountryData).length)
+        }]
+      },
+      options: { 
+        responsive:true, 
+        maintainAspectRatio:false,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // Render Waste Type Distribution
+    let typeLabels = Object.keys(wasteTypeData);
+    let typeValues = Object.values(wasteTypeData);
+    let typeColors = wasteTypeColors;
+    if (wasteType!=="all") {
+      typeLabels = [wasteType];
+      typeValues = [wasteTypeData[wasteType]];
+      typeColors = [wasteTypeColors[typeLabels.indexOf(wasteType)] || "#4CAF50"];
+    }
+    typeChart = new Chart(ctx2, {
+      type: "doughnut",
+      data: { labels: typeLabels, datasets:[{ data:typeValues, backgroundColor:typeColors }] },
+      options:{ 
+        responsive:true, 
+        maintainAspectRatio:false,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+
+    // Recycling Trend (color changes with wasteType)
+    let trendLineColor = trendColor;
+    if (wasteType === "plastic") trendLineColor = "#f44336";
+    else if (wasteType === "organic") trendLineColor = "#4CAF50";
+    else if (wasteType === "paper") trendLineColor = "#2196f3";
+    else if (wasteType === "glass") trendLineColor = "#ff9800";
+    else if (wasteType === "metal") trendLineColor = "#9c27b0";
+    else if (wasteType === "e-waste") trendLineColor = "#607d8b";
+
+    trendChart = new Chart(ctx3, {
+      type: "line",
+      data: {
+        labels:["2019","2020","2021","2022","2023"],
+        datasets:[{ label:"Recycling Rate (%)", data:recyclingTrend, borderColor:trendLineColor, backgroundColor:trendLineColor+"22", fill:true }]
+      },
+      options:{ 
+        responsive:true, 
+        maintainAspectRatio:false,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+
+  // Initial load
+  renderCharts();
+
+  // Apply filters
+  document.getElementById("applyFilters").addEventListener("click", () => {
+    const region = document.getElementById("regionFilter").value;
+    const year = document.getElementById("yearFilter").value;
+    const type = document.getElementById("wasteTypeFilter").value;
+    renderCharts(region, year, type);
+  });
+</script>
+</body>
+</html>
